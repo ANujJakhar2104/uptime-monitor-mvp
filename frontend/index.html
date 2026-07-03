@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">System Status</h1>
+                <p class="text-gray-500 mt-1">Auto-refreshing every 60 seconds</p>
+            </div>
+            <button onclick="fetchMonitors()" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 shadow-sm">Refresh Now</button>
+        </div>
+
+        <!-- Add Monitor Form -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Add New Monitor</h2>
+            <form id="add-monitor-form" class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Target URL</label>
+                    <input type="url" id="target_url" required placeholder="https://httpbin.org/status/200" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="w-32">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Interval (s)</label>
+                    <input type="number" id="interval" required min="10" value="60" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium">Monitor</button>
+            </form>
+            <p id="error-msg" class="text-red-500 text-sm mt-3 hidden"></p>
+        </div>
+
+        <!-- Status Table -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4 font-medium">Status</th>
+                        <th class="px-6 py-4 font-medium">Target</th>
+                        <th class="px-6 py-4 font-medium">Interval</th>
+                    </tr>
+                </thead>
+                <tbody id="monitors-list" class="divide-y divide-gray-100">
+                    <!-- JS injects rows here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        async function fetchMonitors() {
+            try {
+                const response = await fetch(`${API_BASE}/urls`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const data = await response.json();
+                
+                const list = document.getElementById('monitors-list');
+                list.innerHTML = '';
+                
+                if(data.length === 0) {
+                    list.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No monitors active yet. Add one above!</td></tr>`;
+                    return;
+                }
+
+                data.forEach(monitor => {
+                    // Set color based on current_status from your Enum
+                    let statusColor = 'bg-yellow-500'; 
+                    if (monitor.current_status === 'UP') statusColor = 'bg-green-500';
+                    if (monitor.current_status === 'DOWN') statusColor = 'bg-red-500';
+                    
+                    list.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full ${statusColor}"></span>
+                                <span class="font-medium text-gray-700">${monitor.current_status}</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 font-mono text-sm">${monitor.url}</td>
+                            <td class="px-6 py-4 text-gray-500">${monitor.check_interval_seconds}s</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('error-msg').classList.add('hidden');
+            } catch (error) {
+                const list = document.getElementById('monitors-list');
+                list.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center bg-red-50 text-red-600">Error connecting to API. Ensure backend is running on port 8000.</td></tr>`;
+            }
+        }
+
+        document.getElementById('add-monitor-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('target_url').value;
+            const interval = document.getElementById('interval').value;
+            const errorMsg = document.getElementById('error-msg');
+            
+            try {
+                const response = await fetch(`${API_BASE}/urls`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: url, 
+                        check_interval_seconds: parseInt(interval) 
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || 'Failed to add monitor');
+                }
+                
+                document.getElementById('target_url').value = '';
+                errorMsg.classList.add('hidden');
+                fetchMonitors(); // Refresh table immediately
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Initial load and auto-refresh
+        fetchMonitors();
+        setInterval(fetchMonitors, 60000);
+    </script>
+</body>
+</html>
