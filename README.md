@@ -22,6 +22,8 @@ A quick walkthrough of the setup and monitoring flow — spinning up the stack w
 
 ![Dashboard showing a failed URL](screenshots/Screenshot_1.png)
 
+![Dashboard showing a failed URL](screenshots/Screenshot_3.png)
+
 ## Features
 - Register any URL from the dashboard with one click
 - Background worker pings every registered URL on a schedule and records status code + response time
