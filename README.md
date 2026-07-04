@@ -20,7 +20,7 @@ A quick walkthrough of the setup and monitoring flow — spinning up the stack w
 
 | Dashboard — URLs UP | Dashboard — URL DOWN |
 |---|---|
-| ![Dashboard showing a healthy URL](docs/screenshot-up.png) | ![Dashboard showing a failed URL](docs/screenshot-down.png) |
+| ![Dashboard showing a healthy URL](screenshots/Screenshot_1.png) | ![Dashboard showing a failed URL]screenshots/Screenshot_2.png) |
 
 ## Features
 - Register any URL from the dashboard with one click
