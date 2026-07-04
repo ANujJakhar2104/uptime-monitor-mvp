@@ -42,6 +42,7 @@
                     <tr>
                         <th class="px-6 py-4 font-medium">Status</th>
                         <th class="px-6 py-4 font-medium">Target</th>
+                        <th class="px-6 py-4 font-medium">Ping</th>
                         <th class="px-6 py-4 font-medium">Interval</th>
                     </tr>
                 </thead>
@@ -65,7 +66,7 @@
                 list.innerHTML = '';
                 
                 if(data.length === 0) {
-                    list.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No monitors active yet. Add one above!</td></tr>`;
+                    list.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No monitors active yet. Add one above!</td></tr>`;
                     return;
                 }
 
@@ -75,6 +76,9 @@
                     if (monitor.current_status === 'UP') statusColor = 'bg-green-500';
                     if (monitor.current_status === 'DOWN') statusColor = 'bg-red-500';
                     
+                    // Format response time
+                    const pingText = monitor.response_time ? `${monitor.response_time} ms` : 'N/A';
+                    
                     list.innerHTML += `
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 flex items-center gap-2">
@@ -82,6 +86,7 @@
                                 <span class="font-medium text-gray-700">${monitor.current_status}</span>
                             </td>
                             <td class="px-6 py-4 text-gray-600 font-mono text-sm">${monitor.url}</td>
+                            <td class="px-6 py-4 text-gray-500 text-sm font-mono">⏱️ ${pingText}</td>
                             <td class="px-6 py-4 text-gray-500">${monitor.check_interval_seconds}s</td>
                         </tr>
                     `;
@@ -89,7 +94,7 @@
                 document.getElementById('error-msg').classList.add('hidden');
             } catch (error) {
                 const list = document.getElementById('monitors-list');
-                list.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center bg-red-50 text-red-600">Error connecting to API. Ensure backend is running on port 8000.</td></tr>`;
+                list.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center bg-red-50 text-red-600">Error connecting to API. Ensure backend is running on port 8000.</td></tr>`;
             }
         }
 

@@ -24,6 +24,7 @@ class MonitoredURL(Base):
     webhook_url = Column(String, nullable=True)  # optional POST target on status change
 
     current_status = Column(Enum(URLStatus), default=URLStatus.UNKNOWN, nullable=False)
+    response_time = Column(Float, nullable=True) # last known response time in milliseconds
     consecutive_failures = Column(Integer, default=0, nullable=False)
 
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

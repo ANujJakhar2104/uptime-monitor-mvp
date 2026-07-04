@@ -17,8 +17,6 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     
     # 2. Start the background monitor loop. 
-    # If your manager.start_all() is async, we use create_task. 
-    # If it is a normal sync function (using threads), we just call it directly.
     if asyncio.iscoroutinefunction(manager.start_all):
         asyncio.create_task(manager.start_all())
     else:
@@ -35,11 +33,11 @@ async def lifespan(app: FastAPI):
 # INITIALIZE APP FIRST
 app = FastAPI(lifespan=lifespan)
 
-# CORS MIDDLEWARE
+# CORS MIDDLEWARE (Yeh frontend block hone se rokega)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,  # <--- Crucial for vanilla HTML frontend
+    allow_credentials=False,  
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -63,9 +61,6 @@ def create_url(url_data: schemas.URLCreate, db: Session = Depends(get_db)):
     db.add(new_url)
     db.commit()
     db.refresh(new_url)
-    
-    # Add to the running monitor loop
-    #manager.add_monitor(new_url.id, new_url.url, new_url.check_interval_seconds)
     
     return new_url
 

@@ -12,18 +12,17 @@ class URLCreate(BaseModel):
     expected_status_code: Optional[int] = None  # None -> treat any code < 400 as success
     webhook_url: Optional[HttpUrl] = None
 
-
 class URLOut(BaseModel):
     id: int
     url: str
     check_interval_seconds: int
     expected_status_code: Optional[int]
     current_status: URLStatus
+    response_time: Optional[float] = None
     created_at: datetime.datetime
 
     class Config:
         from_attributes = True
-
 
 class PingOut(BaseModel):
     id: int
